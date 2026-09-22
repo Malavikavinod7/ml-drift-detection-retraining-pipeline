@@ -107,6 +107,13 @@ def main():
             print("Batch labels not available. Skipping retraining for this batch.")
             continue
 
+        champion_batch_metrics = evaluate_model(
+            model=current_model,
+            X=X_batch,
+            y=y_batch,
+            metadata=metadata
+        )
+
         candidate_model = retrain_model(
             X_ref=X_ref,
             y_ref=y_ref,
@@ -128,16 +135,20 @@ def main():
             model_name=f"candidate_model_{Path(batch_name).stem}"
         )
 
-        primary_metric = metadata.get("primary_metric")
-        baseline_score = baseline_metrics.get(primary_metric)
-        candidate_score = candidate_metrics.get(primary_metric)
+        primary_metric = metadata.get("primary_metric", "f1")
+        champion_score = champion_batch_metrics.get(primary_metric, 0.0)
+        candidate_score = candidate_metrics.get(primary_metric, 0.0)
 
-        if candidate_score is not None and baseline_score is not None and candidate_score > baseline_score:
+        print(f"\n--- Champion-Challenger Promotion Evaluation ({batch_name}) ---")
+        print(f"Current Champion {primary_metric.upper()} Score : {champion_score:.4f}")
+        print(f"Candidate Model  {primary_metric.upper()} Score : {candidate_score:.4f}")
+
+        if candidate_score > champion_score:
             current_model = candidate_model
             baseline_metrics = candidate_metrics
-            print(f"Candidate model promoted for batch {batch_name}.")
+            print(f"Result: Candidate model PROMOTED to Champion for batch {batch_name}.\n")
         else:
-            print(f"Candidate model rejected for batch {batch_name}.")
+            print(f"Result: Candidate model REJECTED. Current Champion retained for batch {batch_name}.\n")
 
     print("\nPipeline execution completed.")
 
