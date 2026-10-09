@@ -1,8 +1,11 @@
 """Logging utilities for model metrics."""
 
+import threading
 from pathlib import Path
-import pandas as pd
 from datetime import datetime
+import pandas as pd
+
+_metrics_lock = threading.Lock()
 
 
 def log_metrics(metrics_dict, model_name, output_dir="reports/metrics", filename="metrics_log.csv"):
@@ -17,12 +20,13 @@ def log_metrics(metrics_dict, model_name, output_dir="reports/metrics", filename
 
     output_path = output_dir / filename
 
-    if output_path.exists():
-        existing_df = pd.read_csv(output_path)
-        updated_df = pd.concat([existing_df, pd.DataFrame([log_entry])], ignore_index=True)
-    else:
-        updated_df = pd.DataFrame([log_entry])
+    with _metrics_lock:
+        if output_path.exists():
+            existing_df = pd.read_csv(output_path)
+            updated_df = pd.concat([existing_df, pd.DataFrame([log_entry])], ignore_index=True)
+        else:
+            updated_df = pd.DataFrame([log_entry])
 
-    updated_df.to_csv(output_path, index=False)
+        updated_df.to_csv(output_path, index=False)
 
     return output_path

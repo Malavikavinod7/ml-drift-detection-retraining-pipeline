@@ -1,23 +1,19 @@
 from pathlib import Path
-import json
 import sys
 
 sys.path.append(str(Path(__file__).resolve().parent / "src"))
 
-from core.config_loader import load_all_configs
-from core.metadata_builder import build_metadata
+from core.config_loader import load_all_configs  # noqa: E402
+from core.metadata_builder import build_metadata  # noqa: E402
 
-schema, pipeline_config, model_config = load_all_configs()
-metadata = build_metadata(schema=schema, pipeline_config=pipeline_config, model_config=model_config)
 
-print("SCHEMA:")
-print(json.dumps(schema, indent=2))
+def test_config_loading_and_metadata():
+    schema, pipeline_config, model_config = load_all_configs()
+    assert isinstance(schema, dict)
+    assert isinstance(pipeline_config, dict)
+    assert isinstance(model_config, dict)
+    assert "target_column" in schema
 
-print("\nPIPELINE CONFIG:")
-print(json.dumps(pipeline_config, indent=2))
-
-print("\nMODEL CONFIG:")
-print(json.dumps(model_config, indent=2))
-
-print("\nMETADATA:")
-print(json.dumps(metadata, indent=2))
+    metadata = build_metadata(schema=schema, pipeline_config=pipeline_config, model_config=model_config)
+    assert isinstance(metadata, dict)
+    assert metadata["target_column"] == schema["target_column"]
