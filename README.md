@@ -285,19 +285,56 @@ The synthetic data generator can intentionally inject drift into production batc
 
 ---
 
-# Pipeline Execution
+# Quickstart & Setup Guide
 
-Generate synthetic data:
+### 1. Environment Setup
 
+```bash
+cd drift-retrain-platform
+
+# Create virtual environment
+python -m venv .venv
+
+# Activate virtual environment
+# Windows:
+.venv\Scripts\activate
+# Linux/macOS:
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
 ```
+
+### 2. Generate Synthetic Dataset
+
+```bash
 python scripts/generate_synthetic_customer_churn.py
 ```
 
-Run the complete pipeline:
+### 3. Run Pipeline & QA Suite
 
+```bash
+# Set PYTHONPATH to src directory
+# Windows PowerShell:
+$env:PYTHONPATH="src"; python src/main.py
+
+# Linux/macOS:
+PYTHONPATH=src python src/main.py
 ```
-python src/main.py
+
+### 4. Running Tests & Quality Verification
+
+```bash
+# Run full unit & edge-case test suite
+$env:PYTHONPATH="src"; pytest
+
+# Run Flake8 linting
+$env:PYTHONPATH="src"; flake8 src tests test_batch_manager.py test_config.py test_dataset_loader.py test_feature_alignment.py test_preprocessor.py test_schema.py
+
+# Run Mypy static type checker
+$env:PYTHONPATH="src"; mypy src
 ```
+
 
 ---
 
